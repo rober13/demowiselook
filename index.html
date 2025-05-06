@@ -1,72 +1,137 @@
-<div class="container">
-  <h3>Conversation con Wiselook</h3>
-  <div class="form-group">
-    <label for="replicaInput">Replica ID:</label>
-    <input type="text" id="replicaInput" placeholder="Introduce el Replica ID o deja en blanco para usar el predeterminado">
-  </div>
-  <button id="callBtn">Iniciar</button>
-  <div id="callArea" style="height:600px;"></div>
-</div>
-
-<script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
-<script>
-document.getElementById('callBtn').onclick = async () => {
-  // Obtener el ID de replica desde el input o usar undefined para que el backend use el predeterminado
-  const replicaId = document.getElementById('replicaInput').value || undefined;
-  
-  try {
-    const res = await fetch('/api/start-conversation', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ replicaId })
-    });
-    
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.error || 'Error al iniciar la conversación');
+\index.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conversación con Wiselook</title>
+  <style>
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
     }
-    
-    const { url } = await res.json();
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    button {
+      background-color: #0078d4;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #106ebe;
+    }
+    .loading {
+      padding: 15px;
+      text-align: center;
+      background-color: #f0f0f0;
+    }
+    .error {
+      padding: 15px;
+      color: #d83b01;
+      border: 1px solid #d83b01;
+      background-color: #fff0f0;
+    }
+    #callContainer {
+      height: 600px;
+      border: 1px solid #e0e0e0;
+      background-color: #f8f8f8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Conversación con Wiselook</h2>
+    <div class="form-group">
+      <label for="replicaInput">Replica ID:</label>
+      <input type="text" id="replicaInput" placeholder="Introduce el Replica ID o deja en blanco para usar el predeterminado">
+    </div>
+    <button id="callBtn">Iniciar conversación</button>
+    <div id="callArea">
+      <div id="callContainer"></div>
+    </div>
+  </div>
 
-    const iframe = document.createElement('iframe');
-    iframe.src = url;
-    iframe.style = "width:100%;height:100%;border:0";
-    document.getElementById('callArea').appendChild(iframe);
-  } catch (error) {
-    alert(`Error: ${error.message}`);
-    console.error(error);
-  }
-};
-</script>
-
-<style>
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-.form-group {
-  margin-bottom: 15px;
-}
-label {
-  display: block;
-  margin-bottom: 5px;
-}
-input {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-}
-button {
-  background-color: #0078d4;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-}
-button:hover {
-  background-color: #106ebe;
-}
-</style>
+  <!-- Cargar Daily.js desde CDN -->
+  <script crossorigin src="https://unpkg.com/@daily-co/daily-js@0.47.0/dist/daily.js"></script>
+  
+  <script>
+    document.getElementById('callBtn').onclick = async () => {
+      // Mostrar estado de carga
+      const callContainer = document.getElementById('callContainer');
+      callContainer.innerHTML = '<div class="loading">Conectando con Wiselook...</div>';
+      
+      // Obtener el ID de replica
+      const replicaId = document.getElementById('replicaInput').value || undefined;
+      
+      try {
+        // Llamar a nuestra API para crear la conversación
+        const res = await fetch('/api/start-conversation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ replicaId })
+        });
+        
+        // Manejar errores de la API
+        if (!res.ok) {
+          let errorMessage = 'Error al iniciar la conversación';
+          try {
+            const errorData = await res.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            if (res.status === 404) {
+              errorMessage = 'API no encontrada. Verifica que la función API esté correctamente desplegada.';
+            }
+          }
+          throw new Error(errorMessage);
+        }
+        
+        // Procesar respuesta exitosa
+        const data = await res.json();
+        
+        // Limpiar el contenedor
+        callContainer.innerHTML = '';
+        
+        // Crear el frame de Daily usando su API
+        try {
+          // Usar la API de Daily.js correctamente
+          const callFrame = window.DailyIframe.createFrame(callContainer, {
+            showLeaveButton: true,
+            iframeStyle: {
+              width: '100%',
+              height: '100%',
+              border: '0'
+            }
+          });
+          
+          // Unirse a la sala
+          await callFrame.join({ url: data.url });
+          
+          // Escuchar eventos de la llamada
+          callFrame.on('left-meeting', () => {
+            callContainer.innerHTML = '<div style="padding:15px;text-align:center;">Llamada finalizada</div>';
+          });
+        } catch (dailyError) {
+          console.error('Error con Daily.js:', dailyError);
+          callContainer.innerHTML = `<div class="error">Error al iniciar el video: ${dailyError.message}</div>`;
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        callContainer.innerHTML = `<div class="error">${error.message}</div>`;
+      }
+    };
+  </script>
+</body>
+</html>
