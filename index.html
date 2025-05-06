@@ -1,15 +1,15 @@
 <div class="container">
-  <h3>Conversación con AI</h3>
+  <h3>Conversation con Wiselook</h3>
   <div class="form-group">
     <label for="replicaInput">Replica ID:</label>
     <input type="text" id="replicaInput" placeholder="Introduce el Replica ID o deja en blanco para usar el predeterminado">
   </div>
-  <button id="callBtn">Iniciar conversación</button>
+  <button id="callBtn">Iniciar</button>
   <div id="callArea" style="height:600px;"></div>
 </div>
 
 <script type="module">
-import DailyIframe from "https://unpkg.com/@daily-co/daily-js";
+import { DailyIframe } from "https://unpkg.com/@daily-co/daily-js";
 
 document.getElementById('callBtn').onclick = async () => {
   // Obtener el ID de replica desde el input o usar undefined para que el backend use el predeterminado

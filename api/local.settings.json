@@ -1,0 +1,9 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+      "TAVUS_API_KEY": "0a19e789a60b4153a9bace93678784e6",
+      "DEFAULT_REPLICA_ID": "rca8a38779a8",
+      "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+      "FUNCTIONS_WORKER_RUNTIME": "node"
+    }
+  }
