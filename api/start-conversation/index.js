@@ -3,6 +3,7 @@ module.exports = async function (context, req) {
     // Obtener replicaId del request o usar el valor por defecto
     const requestBody = req.body || {};
     const replicaId = requestBody.replicaId || process.env.DEFAULT_REPLICA_ID;
+    const personaId = requestBody.personaId || process.env.DEFAULT_PERSONA_ID; // NUEVO
     
     if (!replicaId) {
       context.log.error("No se proporcionó replica ID");
@@ -25,6 +26,7 @@ module.exports = async function (context, req) {
     // Preparar payload para Tavus API con parámetros adicionales
     const payload = {
       replica_id: replicaId,
+      persona_id: personaId, // NUEVO
       callback_url: callbackUrl,
       properties: {
         max_call_duration: 1800, // 30 minutos

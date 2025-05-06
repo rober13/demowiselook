@@ -57,6 +57,10 @@
       <label for="replicaInput">Replica ID:</label>
       <input type="text" id="replicaInput" placeholder="Introduce el Replica ID o deja en blanco para usar el predeterminado">
     </div>
+    <div class="form-group">
+      <label for="personaInput">Persona ID:</label>
+      <input type="text" id="personaInput" placeholder="Introduce el Persona ID o deja en blanco para usar el predeterminado">
+    </div>
     <button id="callBtn">Iniciar conversación</button>
     <div id="callArea">
       <div id="callContainer"></div>
@@ -72,15 +76,16 @@
       const callContainer = document.getElementById('callContainer');
       callContainer.innerHTML = '<div class="loading">Conectando con Wiselook...</div>';
       
-      // Obtener el ID de replica
+      // Obtener el ID de replica y persona
       const replicaId = document.getElementById('replicaInput').value || undefined;
+      const personaId = document.getElementById('personaInput').value || undefined;
       
       try {
         // Llamar a nuestra API para crear la conversación
         const res = await fetch('/api/start-conversation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ replicaId })
+          body: JSON.stringify({ replicaId, personaId })
         });
         
         // Manejar errores de la API
