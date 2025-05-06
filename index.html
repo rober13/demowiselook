@@ -71,24 +71,32 @@
   <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
   
   <script>
+    let callFrame = null; // Variable global para el frame
+
     document.getElementById('callBtn').onclick = async () => {
-      // Mostrar estado de carga
       const callContainer = document.getElementById('callContainer');
       callContainer.innerHTML = '<div class="loading">Conectando con Wiselook...</div>';
-      
-      // Obtener el ID de replica y persona
+
+      // Destruir el frame anterior si existe
+      if (callFrame) {
+        try {
+          await callFrame.destroy();
+        } catch (e) {
+          // Ignorar errores de destrucción
+        }
+        callFrame = null;
+      }
+
       const replicaId = document.getElementById('replicaInput').value || undefined;
       const personaId = document.getElementById('personaInput').value || undefined;
-      
+
       try {
-        // Llamar a nuestra API para crear la conversación
         const res = await fetch('/api/start-conversation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ replicaId, personaId })
         });
-        
-        // Manejar errores de la API
+
         if (!res.ok) {
           let errorMessage = 'Error al iniciar la conversación';
           try {
@@ -101,17 +109,12 @@
           }
           throw new Error(errorMessage);
         }
-        
-        // Procesar respuesta exitosa
+
         const data = await res.json();
-        
-        // Limpiar el contenedor
         callContainer.innerHTML = '';
-        
-        // Crear el frame de Daily usando su API
+
         try {
-          // Usar la API de Daily.js correctamente
-          const callFrame = window.DailyIframe.createFrame(callContainer, {
+          callFrame = window.DailyIframe.createFrame(callContainer, {
             showLeaveButton: true,
             iframeStyle: {
               width: '100%',
@@ -119,11 +122,9 @@
               border: '0'
             }
           });
-          
-          // Unirse a la sala
+
           await callFrame.join({ url: data.url });
-          
-          // Escuchar eventos de la llamada
+
           callFrame.on('left-meeting', () => {
             callContainer.innerHTML = '<div style="padding:15px;text-align:center;">Llamada finalizada</div>';
           });
