@@ -1,21 +1,73 @@
-<button id="callBtn">Iniciar conversación</button>
-<div id="callArea" style="height:600px;"></div>
+<div class="container">
+  <h3>Conversación con AI</h3>
+  <div class="form-group">
+    <label for="replicaInput">Replica ID:</label>
+    <input type="text" id="replicaInput" placeholder="Introduce el Replica ID o deja en blanco para usar el predeterminado">
+  </div>
+  <button id="callBtn">Iniciar conversación</button>
+  <div id="callArea" style="height:600px;"></div>
+</div>
 
 <script type="module">
 import DailyIframe from "https://unpkg.com/@daily-co/daily-js";
 
-const replicaId = "tu_replica_id";   // <-- pon aquí tu replica
 document.getElementById('callBtn').onclick = async () => {
-  const res = await fetch('/api/start-conversation', {
-    method: 'POST',
-    body: JSON.stringify({ replicaId })
-  });
-  const { url } = await res.json();
+  // Obtener el ID de replica desde el input o usar undefined para que el backend use el predeterminado
+  const replicaId = document.getElementById('replicaInput').value || undefined;
+  
+  try {
+    const res = await fetch('/api/start-conversation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ replicaId })
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Error al iniciar la conversación');
+    }
+    
+    const { url } = await res.json();
 
-  const iframe = document.createElement('iframe');
-  iframe.src = url;           // conversation_url de Tavus
-  iframe.style = "width:100%;height:100%;border:0";
-  document.getElementById('callArea').appendChild(iframe);
-
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.style = "width:100%;height:100%;border:0";
+    document.getElementById('callArea').appendChild(iframe);
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+    console.error(error);
+  }
 };
 </script>
+
+<style>
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+button {
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #106ebe;
+}
+</style>
