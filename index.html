@@ -8,9 +8,8 @@
   <div id="callArea" style="height:600px;"></div>
 </div>
 
-<script type="module">
-import { DailyIframe } from "https://unpkg.com/@daily-co/daily-js";
-
+<script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
+<script>
 document.getElementById('callBtn').onclick = async () => {
   // Obtener el ID de replica desde el input o usar undefined para que el backend use el predeterminado
   const replicaId = document.getElementById('replicaInput').value || undefined;
